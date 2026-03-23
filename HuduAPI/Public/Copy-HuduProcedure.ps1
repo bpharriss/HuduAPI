@@ -45,7 +45,7 @@ function Copy-HuduProcedure {
         return ($res.procedure ?? $res)
     }
     catch {
-        Write-Warning "Failed to duplicate procedure ID $ProcedureId: $($_.Exception.Message)"
+        Write-Warning "Failed to duplicate procedure ID $ProcedureId $($_.Exception.Message)"
         return $null
     }
 }

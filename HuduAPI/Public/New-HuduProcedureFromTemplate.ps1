@@ -64,7 +64,8 @@ function New-HuduProcedureFromTemplate {
         return ($res.procedure ?? $res)
     }
     catch {
-        Write-Warning "Failed to create procedure from template ID $ProcedureId: $($_.Exception.Message)"
+        Write-Warning "Failed to create procedure from template ID $ProcedureId- $($_.Exception.Message)"
         return $null
     }
+}
 }
