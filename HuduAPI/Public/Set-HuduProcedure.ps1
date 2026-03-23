@@ -32,7 +32,7 @@ function Set-HuduProcedure {
         return ($res.procedure ?? $res)
     }
     catch {
-        Write-Warning "Failed to update procedure ID $Id: $($_.Exception.Message)"
+        Write-Warning "Failed to update procedure ID $Id- $($_.Exception.Message)"
         return $null
     }
 }

@@ -1,4 +1,4 @@
-function Start-HuduProcedureRun {
+function Start-HuduProcedure {
     <#
     .SYNOPSIS
     Create a run from an existing company process.
@@ -10,6 +10,7 @@ function Start-HuduProcedureRun {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
+        [Alias('Id')]
         [int]$ProcedureId,
 
         [int]$AssetId,
@@ -26,7 +27,7 @@ function Start-HuduProcedureRun {
         return $res
     }
     catch {
-        Write-Warning "Failed to kickoff procedure ID $ProcedureId: $($_.Exception.Message)"
+        Write-Warning "Failed to kickoff procedure ID $ProcedureId- $($_.Exception.Message)"
         return $null
     }
 }

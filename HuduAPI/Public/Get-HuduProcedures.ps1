@@ -71,7 +71,7 @@ function Get-HuduProcedures {
             return ($res.procedure ?? $res)
         }
         catch {
-            Write-Warning "Failed to retrieve procedure ID $Id: $($_.Exception.Message)"
+            Write-Warning "Failed to retrieve procedure ID $Id- $($_.Exception.Message)"
             return $null
         }
     }

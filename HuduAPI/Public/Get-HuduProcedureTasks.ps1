@@ -17,7 +17,7 @@ function Get-HuduProcedureTasks {
             return ($res.procedure_task ?? $res)
         }
         catch {
-            Write-Warning "Failed to retrieve procedure task ID $Id: $($_.Exception.Message)"
+            Write-Warning "Failed to retrieve procedure task ID $Id- $($_.Exception.Message)"
             return $null
         }
     }
