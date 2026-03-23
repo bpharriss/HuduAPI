@@ -29,12 +29,22 @@ function New-HuduProcedure {
         [bool]$CompanyTemplate
     )
 
-    $payload = @{
+
+    $procedure = @{
         name             = $Name
         description      = $Description
-        company_id       = $CompanyId
-        company_template = $CompanyTemplate
-    } | ConvertTo-Json -Depth 10
+    } 
+
+    if ($PSBoundParameters.ContainsKey('CompanyId')) {
+        $procedure['company_id'] = $CompanyId
+        if ($PSBoundParameters.ContainsKey('CompanyTemplate')) {
+            $procedure['company_template'] = $CompanyTemplate
+        }
+    } else {
+        $procedure["company_id"] = $null
+    }
+    
+    $payload = $procedure | ConvertTo-Json -Depth 10
 
     try {
         $res = Invoke-HuduRequest -Method POST -Resource "/api/v1/procedures" -Body $payload

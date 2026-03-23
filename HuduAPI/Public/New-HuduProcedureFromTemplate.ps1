@@ -1,45 +1,36 @@
 function New-HuduProcedureFromTemplate {
     <#
     .SYNOPSIS
-    Create a new procedure from an existing template
+    Create a new process from a global template.
 
     .DESCRIPTION
-    Creates a new procedure (template or process) by cloning an existing one.
-    If no company_id is provided, a global template is created.
-
-    .PARAMETER Id
-    ID of the template procedure to clone
-
-    .PARAMETER CompanyId
-    Optional company ID. If omitted, creates a global template.
-
-    .PARAMETER Name
-    Optional new name for the new procedure
-
-    .PARAMETER Description
-    Optional description for the new procedure
-
-    .EXAMPLE
-    New-HuduProcedureFromTemplate -Id 50 -CompanyId 456 -Name "Client Onboarding Clone"
+    Calls POST /procedures/{id}/create_from_template.
+    If CompanyId is supplied, creates a company-specific process.
+    If not, creates another global template copy.
     #>
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory)] [int]$Id,
-        [int]$CompanyId,
+    param(
+        [Parameter(Mandatory)]
+        [int]$ProcedureId,
+
+        [Nullable[int]]$CompanyId,
+
         [string]$Name,
+
         [string]$Description
     )
 
     $params = @{}
-    if ($CompanyId)   { $params.company_id = $CompanyId }
-    if ($Name)        { $params.name = $Name }
-    if ($Description) { $params.description = $Description }
+    if ($PSBoundParameters.ContainsKey('CompanyId'))   { $params.company_id = $CompanyId }
+    if ($PSBoundParameters.ContainsKey('Name'))        { $params.name = $Name }
+    if ($PSBoundParameters.ContainsKey('Description')) { $params.description = $Description }
 
     try {
-        $res = Invoke-HuduRequest -Method POST -Resource "/api/v1/procedures/$Id/create_from_template" -Params $params
-        return $res.procedure
-    } catch {
-        Write-Warning "Failed to create procedure from template ID $Id"
+        $res = Invoke-HuduRequest -Method POST -Resource "/api/v1/procedures/$ProcedureId/create_from_template" -Params $params
+        return ($res.procedure ?? $res)
+    }
+    catch {
+        Write-Warning "Failed to create procedure from template ID $ProcedureId: $($_.Exception.Message)"
         return $null
     }
 }

@@ -1,68 +1,93 @@
 function Get-HuduProcedures {
     <#
     .SYNOPSIS
-    Get a list of Procedures (Processes)
+    Get Hudu processes and/or runs.
 
     .DESCRIPTION
-    Calls Hudu API to retrieve list of procedures
+    Retrieves a list of procedures from Hudu. In the new API, this includes:
+    - Processes/templates (run = false)
+    - Runs/instances (run = true)
 
     .PARAMETER Id
-    Id of the Procedure
+    Retrieve a single procedure by ID.
 
-    .PARAMETER CompanyId
-    Filter by company id
+    .PARAMETER Type
+    Filter by type: process, run, or all.
+
+    .PARAMETER ProcessScope
+    Filter process templates by scope: global or company.
+
+    .PARAMETER ParentProcessId
+    Filter runs created from a specific process.
 
     .PARAMETER Name
-    Fitler by name of article
+    Filter by exact name.
 
-    .PARAMETER GlobalTemplate
-    Filter for global templates (true/false)
+    .PARAMETER CompanyId
+    Filter by company ID.
 
-    .PARAMETER CompanyTemplate
-    Filter for company-specific templates by company ID
+    .PARAMETER Slug
+    Filter by slug.
 
-    .PARAMETER ParentProcedureId
-    Filter for procedures that are children of another procedure
+    .PARAMETER CreatedAt
+    Exact date or date range string.
 
-    .EXAMPLE
-    Get-HuduProcedures -Id 5
+    .PARAMETER UpdatedAt
+    Exact date or date range string.
 
-    .EXAMPLE
-    Get-HuduProcedures -CompanyId 123 -Name "Onboarding"
+    .PARAMETER Archived
+    Filter by archived status.
 
-    .EXAMPLE
-    Get-HuduProcedures -Name 'Procedure 1'
-
+    .PARAMETER PageSize
+    Optional page size.
     #>
     [CmdletBinding()]
-    Param (
-        [Int]$Id = '',
-        [Alias('company_id')]
-        [Int]$CompanyId = '',
-        [String]$Name = '',
-        [string]$GlobalTemplate,
-        [int]$CompanyTemplate,
-        [int]$ParentProcedureId
-    )
+    param(
+        [int]$Id,
 
+        [ValidateSet('process','run','all')]
+        [string]$Type = 'all',
+
+        [ValidateSet('global','company')]
+        [string]$ProcessScope,
+
+        [Alias('parent_procedure_id')]
+        [int]$ParentProcessId,
+
+        [string]$Name,
+        [int]$CompanyId,
+        [string]$Slug,
+        [string]$CreatedAt,
+        [string]$UpdatedAt,
+
+        [Nullable[bool]]$Archived,
+
+        [int]$PageSize
+    )
 
     if ($Id) {
         try {
             $res = Invoke-HuduRequest -Method GET -Resource "/api/v1/procedures/$Id"
-            return $res.procedure
-        } catch {
-            Write-Warning "Failed to retrieve procedure ID $Id"
+            return ($res.procedure ?? $res)
+        }
+        catch {
+            Write-Warning "Failed to retrieve procedure ID $Id: $($_.Exception.Message)"
             return $null
         }
     }
 
     $params = @{}
-    if ($Name) { $params.name = $Name }
-    if ($Slug) { $params.slug = $Slug }
-    if ($CompanyId) { $params.company_id = $CompanyId }
-    if ($GlobalTemplate) { $params.global_template = $GlobalTemplate }
-    if ($CompanyTemplate) { $params.company_template = $CompanyTemplate }
-    if ($ParentProcedureId) { $params.parent_procedure_id = $ParentProcedureId }
+
+    if ($PSBoundParameters.ContainsKey('Type'))            { $params.type = $Type }
+    if ($PSBoundParameters.ContainsKey('ProcessScope'))    { $params.process_scope = $ProcessScope }
+    if ($PSBoundParameters.ContainsKey('ParentProcessId')) { $params.parent_process_id = $ParentProcessId }
+    if ($PSBoundParameters.ContainsKey('Name'))            { $params.name = $Name }
+    if ($PSBoundParameters.ContainsKey('CompanyId'))       { $params.company_id = $CompanyId }
+    if ($PSBoundParameters.ContainsKey('Slug'))            { $params.slug = $Slug }
+    if ($PSBoundParameters.ContainsKey('CreatedAt'))       { $params.created_at = $CreatedAt }
+    if ($PSBoundParameters.ContainsKey('UpdatedAt'))       { $params.updated_at = $UpdatedAt }
+    if ($PSBoundParameters.ContainsKey('Archived'))        { $params.archived = if ($Archived) { 'true' } else { 'false' } }
+    if ($PSBoundParameters.ContainsKey('PageSize'))        { $params.page_size = $PageSize }
 
     Invoke-HuduRequestPaginated -HuduRequest @{
         Method   = 'GET'

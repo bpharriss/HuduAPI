@@ -1,55 +1,38 @@
 function Set-HuduProcedure {
     <#
     .SYNOPSIS
-    Update an existing Hudu procedure
-
-    .DESCRIPTION
-    Updates fields of an existing procedure by ID.
-
-    .PARAMETER Id
-    ID of the procedure to update
-
-    .PARAMETER Name
-    New name for the procedure
-
-    .PARAMETER Description
-    New description
-
-    .PARAMETER CompanyTemplate
-    Whether this procedure should be marked as a company template
-
-    .PARAMETER CompanyId
-    The company ID the procedure belongs to
-
-    .PARAMETER Archived
-    Whether this procedure should be archived
-
-    .EXAMPLE
-    Set-HuduProcedure -Id 10 -Name "Updated Name" -Archived $true
+    Update an existing Hudu process or run.
     #>
     [CmdletBinding()]
-    param (
-        [Parameter(Mandatory)] [int]$Id,
+    param(
+        [Parameter(Mandatory)]
+        [int]$Id,
+
         [string]$Name,
         [string]$Description,
-        [bool]$CompanyTemplate,
-        [int]$CompanyId,
-        [bool]$Archived
+        [Nullable[int]]$CompanyId,
+        [Nullable[bool]]$Archived
     )
 
-    $payload = @{
-        name             = $Name
-        description      = $Description
-        company_template = $CompanyTemplate
-        company_id       = $CompanyId
-        archived         = $Archived
-    } | ConvertTo-Json -Depth 10
+    $procedure = @{}
+
+    if ($PSBoundParameters.ContainsKey('Name'))        { $procedure.name = $Name }
+    if ($PSBoundParameters.ContainsKey('Description')) { $procedure.description = $Description }
+    if ($PSBoundParameters.ContainsKey('CompanyId'))   { $procedure.company_id = $CompanyId }
+    if ($PSBoundParameters.ContainsKey('Archived'))    { $procedure.archived = $Archived }
+
+    if ($procedure.Count -eq 0) {
+        throw "No fields were supplied to update."
+    }
+
+    $payload = $procedure | ConvertTo-Json -Depth 10
 
     try {
         $res = Invoke-HuduRequest -Method PUT -Resource "/api/v1/procedures/$Id" -Body $payload
-        return $res.procedure
-    } catch {
-        Write-Warning "Failed to update procedure ID $Id"
+        return ($res.procedure ?? $res)
+    }
+    catch {
+        Write-Warning "Failed to update procedure ID $Id: $($_.Exception.Message)"
         return $null
     }
 }
