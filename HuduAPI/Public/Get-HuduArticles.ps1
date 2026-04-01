@@ -59,6 +59,6 @@ function Get-HuduArticles {
             Params   = $Params
         }
 
-        Invoke-HuduRequestPaginated -HuduRequest $HuduRequest -Property articles
+        Invoke-HuduRequestPaginated -HuduRequest $HuduRequest -Property articles -pageSize 100
     }
 }
